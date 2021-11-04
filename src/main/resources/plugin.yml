@@ -1,0 +1,5 @@
+name: CWBW
+version: '${project.version}'
+main: de.proxycord.cwbw.CWBW
+api-version: 1.17
+authors: [ ProxyCord ]

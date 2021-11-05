@@ -19,7 +19,8 @@ public class Config {
         this.file = new File(this.defaultfile, this.configname);
         this.config = YamlConfiguration.loadConfiguration(this.file);
 
-        this.config.options().header("\nConfiguration of " + configname + "\nMade by Vantaria.de1\n");
+        this.config.options().header("\nConfiguration of " + configname + "\nMade by Vantaria.de\nUse %player% to " +
+                "replace the player or use %target% to replace a target player\n");
         this.config.options().copyHeader();
         this.config.options().copyHeader(true);
 

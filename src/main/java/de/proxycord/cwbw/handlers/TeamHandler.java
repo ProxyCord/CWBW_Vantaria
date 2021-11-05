@@ -2,6 +2,7 @@
 package de.proxycord.cwbw.handlers;
 
 import de.proxycord.cwbw.CWBW;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,28 +11,33 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
+@SuppressWarnings("all")
 public class TeamHandler {
 
     public enum Team {
-        RED(new ItemStack(Material.AIR), "Red"),
-        BLUE(new ItemStack(Material.AIR), "Blue"),
-        GREEN(new ItemStack(Material.AIR), "Green"),
-        YELLOW(new ItemStack(Material.AIR), "Yellow"),
-        WHITE(new ItemStack(Material.AIR), "White"),
-        BLACK(new ItemStack(Material.AIR), "Black"),
-        PINK(new ItemStack(Material.AIR), "Pink"),
-        CYAN(new ItemStack(Material.AIR), "Cyan"),
-        NONE( null, "");
+        RED(DataHandler.team_red),
+        BLUE(DataHandler.team_blue),
+        GREEN(DataHandler.team_green),
+        YELLOW(DataHandler.team_yellow),
+        WHITE(DataHandler.team_white),
+        BLACK(DataHandler.team_black),
+        PINK(DataHandler.team_pink),
+        CYAN(DataHandler.team_cyan),
+        NONE( "");
 
         private ItemStack itemstack;
         private String name;
 
-        Team(final ItemStack itemstack, final String name){
+        Team(final String name){
             this.itemstack = itemstack;
             this.name = name;
         }
 
         public ItemStack getItemStack() {
+            if(itemstack == null){
+                itemstack = new ItemManager(Material.LEATHER_CHESTPLATE).setDisplayName(this.getName()).build();
+            }
+
             return itemstack;
         }
 
@@ -40,8 +46,21 @@ public class TeamHandler {
         }
     }
 
-    public static Map<Team, List<Player>> teams = new HashMap<>();
-    public static Inventory teaminventory;
+    public Map<Team, List<Player>> teams = new HashMap<>();
+    public Inventory teaminventory;
+
+    public void load(){
+        teaminventory = Bukkit.createInventory(null, 5 * 9, "Ivn");
+
+        teaminventory.setItem(10, Team.RED.getItemStack());
+        teaminventory.setItem(12, Team.BLUE.getItemStack());
+        teaminventory.setItem(14, Team.GREEN.getItemStack());
+        teaminventory.setItem(16, Team.YELLOW.getItemStack());
+        teaminventory.setItem(28, Team.WHITE.getItemStack());
+        teaminventory.setItem(30, Team.BLACK.getItemStack());
+        teaminventory.setItem(32, Team.PINK.getItemStack());
+        teaminventory.setItem(34, Team.CYAN.getItemStack());
+    }
 
     public enum TeamResult {
         TRUE,
@@ -49,7 +68,7 @@ public class TeamHandler {
         ALREADYIN;
     }
 
-    public static void updateInventory(final Team now, final Team old) {
+    public void updateInventory(final Team now, final Team old) {
         final Integer slot = getTeamItemSlot(now);
 
         ItemStack itemstack = teaminventory.getItem(slot);
@@ -99,7 +118,7 @@ public class TeamHandler {
         }
     }
 
-    public static Integer getTeamItemSlot(final Team team) {
+    public Integer getTeamItemSlot(final Team team) {
         for(int i = 0; i < teaminventory.getSize(); i++) {
             try {
                 final ItemMeta itemmeta = teaminventory.getItem(i).getItemMeta();
@@ -113,7 +132,7 @@ public class TeamHandler {
         return 0;
     }
 
-    public static TeamResult setPlayerTeam(final Player player, final Team team) {
+    public TeamResult setPlayerTeam(final Player player, final Team team) {
         if(teams.containsKey(team)) {
             final List<Player> tplayers = teams.get(team);
 
@@ -124,7 +143,7 @@ public class TeamHandler {
             if(tplayers.size() >= CWBW.getInstance().getDataHandler().getMaxPlayersPerTeam()) {
                 return TeamResult.FULL;
             } else {
-                final Team oldteam = TeamHandler.getTeamOfPlayer(player);
+                final Team oldteam = getTeamOfPlayer(player);
 
 
                 if(oldteam != null) {
@@ -143,7 +162,7 @@ public class TeamHandler {
                 return TeamResult.TRUE;
             }
         } else {
-            final Team oldteam = TeamHandler.getTeamOfPlayer(player);
+            final Team oldteam = getTeamOfPlayer(player);
 
 
             if(oldteam != null) {
@@ -166,11 +185,11 @@ public class TeamHandler {
         }
     }
 
-    public static boolean playWith(final Player player) {
+    public boolean playWith(final Player player) {
         return CWBW.getInstance().getDataHandler().getIngamePlayers().contains(player);
     }
 
-    public static boolean isInATeam(final Player player) {
+    public boolean isInATeam(final Player player) {
         for(final Team team : Team.values()) {
             if(teams.containsKey(team)) {
                 final List<Player> tplayers = teams.get(team);
@@ -182,7 +201,7 @@ public class TeamHandler {
         return false;
     }
 
-    public static boolean isInTeam(final Team team, final Player player) {
+    public boolean isInTeam(final Team team, final Player player) {
         if(teams.containsKey(team)) {
             final List<Player> tplayers = teams.get(team);
             return tplayers.contains(player);
@@ -191,7 +210,7 @@ public class TeamHandler {
         return false;
     }
 
-    public static Team getTeamOfPlayer(final Player player) {
+    public Team getTeamOfPlayer(final Player player) {
         for(final Team pteams : Team.values()) {
             if(teams.containsKey(pteams)) {
                 final List<Player> tplayers = teams.get(pteams);
@@ -205,13 +224,13 @@ public class TeamHandler {
         return null;
     }
 
-    public static List<Player> getPlayersOfTeam(final Team team) {
+    public List<Player> getPlayersOfTeam(final Team team) {
         if(teams.containsKey(team)) return teams.get(team);
 
         return new ArrayList<>();
     }
 
-    public static boolean isInOneTeam(final Player playerone, final Player playertwo) {
+    public boolean isInOneTeam(final Player playerone, final Player playertwo) {
         for(final Team pteams : Team.values()) {
             if(teams.containsKey(pteams)) {
                 final List<Player> tplayers = teams.get(pteams);
@@ -223,7 +242,7 @@ public class TeamHandler {
         return false;
     }
 
-    public static boolean isTeamEmpty(final Team team) {
+    public boolean isTeamEmpty(final Team team) {
         if(teams.containsKey(team)) {
             final List<Player> tplayers = teams.get(team);
 
@@ -233,7 +252,7 @@ public class TeamHandler {
         return true;
     }
 
-    public static void randomTeam() {
+    public void randomTeam() {
         List<Player> playerin = new ArrayList<>();
 
         for(final Player player : CWBW.getInstance().getDataHandler().getIngamePlayers()) {
@@ -282,7 +301,7 @@ public class TeamHandler {
         }
     }
 
-    public static void teleportAllPlayers() {
+    public void teleportAllPlayers() {
         final LocationManager locationManager = CWBW.getInstance().getLocationManager();
         final Location red = locationManager.getLocation(CWBW.getInstance().getDataHandler().getMap() + ".team.red");
         final Location blue = locationManager.getLocation(CWBW.getInstance().getDataHandler().getMap() + ".team.blue");
@@ -363,7 +382,7 @@ public class TeamHandler {
         }
     }
 
-    private static String getPlayersInString(final List<Player> playerlist, final String modifier) {
+    private String getPlayersInString(final List<Player> playerlist, final String modifier) {
         String output = "";
 
         for(final Player player : playerlist) {

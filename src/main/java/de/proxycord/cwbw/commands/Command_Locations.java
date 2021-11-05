@@ -14,7 +14,7 @@ public class Command_Locations implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(sender instanceof Player){
             final Player player = ((Player) sender).getPlayer();
-            final String prefix = CWBW.getInstance().getDataHandler().prefix;
+            final String prefix = CWBW.getInstance().getDataHandler().getLoadedMessages().get("message.prefix");
             if(player.hasPermission("system.admin.setlocation")){
                 if(args.length == 1){
                     if(args[0].equalsIgnoreCase("spawn")){
